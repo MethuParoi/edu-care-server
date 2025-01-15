@@ -54,7 +54,9 @@ async function run() {
   try {
     // await client.connect();
     // add a new food
-    const foodCollection = client.db("cloud-hostel").collection("food-bank");
+    const mealCollection = client
+      .db("cloud-hostel")
+      .collection("mealCollection");
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
@@ -98,16 +100,38 @@ async function run() {
       res.send({ success: true });
     });
 
-    //------------------ Add Food----------------------
-    //add food
-    app.post("/add-food", verifyToken, async (req, res) => {
+    //------------------ Add Meal----------------------
+    //add meal
+    app.post("/add-meal", async (req, res) => {
       // if (req.user.email !== req.query.email) {
       //   console.log("User email:", req.user.email);
       //   console.log("Query email:", req.query.email);
       //   return res.status(403).send("Not authorized");
       // }
       const newFood = req.body;
-      const result = await foodCollection.insertOne(newFood);
+      const result = await mealCollection.insertOne(newFood);
+      res.send(result);
+    });
+
+    //------------------ get Meal----------------------
+    //get meal
+    app.get("/get-featured-meal", async (req, res) => {
+      const mealType = req.query.mealType;
+      let query = {};
+      if (mealType && mealType !== "all") {
+        query = { mealType: mealType };
+      }
+      const cursor = mealCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //get single meal details
+    app.get("/get-meal-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const query = { _id: objectId };
+      const result = await mealCollection.findOne(query);
       res.send(result);
     });
   } catch (error) {
