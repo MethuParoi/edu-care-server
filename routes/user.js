@@ -5,7 +5,7 @@ module.exports = (db) => {
   const userCollection = db.collection("userCollection");
 
   // Add user
-  router.post("/add-user", async (req, res) => {
+  router.post("/add-user-data", async (req, res) => {
     try {
       const newUser = req.body;
       const result = await userCollection.insertOne(newUser);
