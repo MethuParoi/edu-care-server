@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 
 const express = require("express");
 const router = express.Router();
+const verifyToken = require("../middleware/verifyToken");
 
 module.exports = (db) => {
   const mealCollection = db.collection("mealCollection");
@@ -30,7 +31,7 @@ module.exports = (db) => {
   });
 
   // Get single meal details
-  router.get("/get-meal-details/:id", async (req, res) => {
+  router.get("/get-meal-details/:id", verifyToken, async (req, res) => {
     try {
       const id = req.params.id;
 

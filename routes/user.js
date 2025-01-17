@@ -1,5 +1,6 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
+const verifyToken = require("../middleware/verifyToken");
 const router = express.Router();
 
 module.exports = (db) => {
@@ -84,6 +85,21 @@ module.exports = (db) => {
       res.send(result);
     } catch (error) {
       res.status(500).send({ error: "Failed to make admin" });
+    }
+  });
+
+  //check admin
+  router.get("/check-admin/:email", verifyToken, async (req, res) => {
+    try {
+      const email = req.params.email;
+      if (!email) {
+        return res.status(403).send({ error: "Forbidden access" });
+      }
+      const query = { email: email, role: "admin" };
+      const isAdmin = await userCollection.findOne(query);
+      res.send({ admin: true });
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get admin" });
     }
   });
 
