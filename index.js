@@ -14,7 +14,7 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://share-bites-9867f.web.app"],
+    origin: ["http://localhost:5173", "https://cloud-hostel.web.app"],
     credentials: true,
   })
 );
