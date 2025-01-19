@@ -10,12 +10,18 @@ module.exports = (db) => {
     try {
       const id = req.params.id;
       const newReview = req.body;
-      const result = await reviewCollection.insertOne(newReview);
+      const query = { _id: new ObjectId(id) };
+      const update = { $push: { reviews: newReview } };
+      const result = await reviewCollection.updateOne(query, update, {
+        upsert: true,
+      });
       res.send(result);
     } catch (error) {
+      console.error("Error adding review:", error);
       res.status(500).send({ error: "Failed to add review" });
     }
   });
+
 
   // Get reviews
   router.get("/get-reviews", verifyToken, async (req, res) => {
