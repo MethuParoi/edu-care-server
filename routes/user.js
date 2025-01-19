@@ -147,5 +147,35 @@ module.exports = (db) => {
     }
   });
 
+  //insert reviewed meals
+  router.post(
+    "/insert-reviewed-meals/:email",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const user = await userCollection.findOne(query);
+        const newReviewedMeal = Array.isArray(req.body.reviewedMeal)
+          ? req.body.reviewedMeal
+          : [req.body.reviewedMeal];
+        const update = {
+          $set: {
+            reviewedMeal:
+              user && user.reviewedMeal
+                ? [...user.reviewedMeal, ...newReviewedMeal]
+                : newReviewedMeal,
+          },
+        };
+        const result = await userCollection.updateOne(query, update, {
+          upsert: true,
+        });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Failed to update liked meals" });
+      }
+    }
+  );
+
   return router;
 };

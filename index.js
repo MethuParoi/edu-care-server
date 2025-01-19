@@ -8,6 +8,7 @@ const verifyToken = require("./middleware/verifyToken");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const mealRoutes = require("./routes/meal");
+const reviewRoutes = require("./routes/review");
 
 const app = express();
 
@@ -31,6 +32,7 @@ async function main() {
     app.use("/api/auth", authRoutes);
     app.use("/api/user", userRoutes(db));
     app.use("/api/meal", mealRoutes(db));
+    app.use("/api/review", reviewRoutes(db));
 
     // Root Endpoint
     app.get("/", (req, res) => {
