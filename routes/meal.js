@@ -79,5 +79,19 @@ module.exports = (db) => {
     res.send(result);
   });
 
+  //increase like count
+  router.patch("/increase-like/:id", verifyToken, async (req, res) => {
+    const id = req.params.id;
+    // Convert id to ObjectId
+    const objectId = new ObjectId(id);
+    const meal = await mealCollection.findOne({ _id: objectId });
+    const updatedMeal = { ...meal, likes: meal.likes + 1 };
+    const result = await mealCollection.updateOne(
+      { _id: objectId },
+      { $set: updatedMeal }
+    );
+    res.send(result);
+  });
+
   return router;
 };

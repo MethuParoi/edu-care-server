@@ -45,6 +45,23 @@ module.exports = (db) => {
     }
   });
 
+  //get single user by email
+  router.get("/get-user/:email", async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+
+      const user = await userCollection.findOne(query);
+
+      if (!user) {
+        return res.status(404).send({ error: "User not found" });
+      }
+      res.send(user);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get user" });
+    }
+  });
+
   // Search Users by name or email
   router.get("/search-users", async (req, res) => {
     try {
@@ -100,6 +117,33 @@ module.exports = (db) => {
       res.send({ admin: true });
     } catch (error) {
       res.status(500).send({ error: "Failed to get admin" });
+    }
+  });
+
+  //----------------------------------------------
+  //insert liked meals
+  router.post("/insert-liked-meals/:email", verifyToken, async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const newLikedMeals = Array.isArray(req.body.likedMeals)
+        ? req.body.likedMeals
+        : [req.body.likedMeals];
+      const update = {
+        $set: {
+          likedMeals:
+            user && user.likedMeals
+              ? [...user.likedMeals, ...newLikedMeals]
+              : newLikedMeals,
+        },
+      };
+      const result = await userCollection.updateOne(query, update, {
+        upsert: true,
+      });
+      res.send(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to update liked meals" });
     }
   });
 
