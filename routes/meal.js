@@ -69,7 +69,7 @@ module.exports = (db) => {
     res.send(result);
   });
 
-  // Delete a food
+  // Delete a meal
 
   router.delete("/delete-meal/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
@@ -77,6 +77,38 @@ module.exports = (db) => {
     const objectId = new ObjectId(id);
     const result = await mealCollection.deleteOne({ _id: objectId });
     res.send(result);
+  });
+
+  // Search meals by name or email
+  router.get("/search-meals", async (req, res) => {
+    try {
+      const { query } = req.query; // Get the search query from query parameters
+
+      if (!query || query.trim() === "") {
+        return res.status(400).send({ error: "Search query is required" });
+      }
+
+      const searchRegex = new RegExp(query, "i"); // Case-insensitive regex for partial matching
+      const searchQuery = {
+        $or: [
+          {
+            title: { $regex: searchRegex },
+          },
+          // { email: { $regex: searchRegex } },
+        ],
+      };
+
+      const meals = await mealCollection.find(searchQuery).toArray();
+
+      if (meals.length === 0) {
+        return res.status(404).send({ message: "No meals found" });
+      }
+
+      res.send({ meals });
+    } catch (error) {
+      console.error("Error searching meals:", error);
+      res.status(500).send({ error: "Failed to search meals" });
+    }
   });
 
   //increase like count
