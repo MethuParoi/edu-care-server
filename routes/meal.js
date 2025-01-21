@@ -107,5 +107,30 @@ module.exports = (db) => {
     res.send(result);
   });
 
+  //-------------------------Upcoming Meals--------------------------------
+
+  const upcomingMealCollection = db.collection("upcomingMealCollection");
+
+  // Add upcoming meal
+  router.post("/add-upcoming-meal", verifyToken, async (req, res) => {
+    try {
+      const newUpcomingMeal = req.body;
+      const result = await upcomingMealCollection.insertOne(newUpcomingMeal);
+      res.send(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to add upcoming meal" });
+    }
+  });
+
+  //get upcoming meals
+  router.get("/get-upcoming-meals", async (req, res) => {
+    try {
+      const upcomingMeals = await upcomingMealCollection.find({}).toArray();
+      res.send(upcomingMeals);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to fetch upcoming meals" });
+    }
+  });
+
   return router;
 };
