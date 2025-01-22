@@ -79,7 +79,7 @@ module.exports = (db) => {
     res.send(result);
   });
 
-  // Search meals by name or email
+  // Search meals by title
   router.get("/search-meals", async (req, res) => {
     try {
       const { query } = req.query; // Get the search query from query parameters
@@ -108,6 +108,58 @@ module.exports = (db) => {
     } catch (error) {
       console.error("Error searching meals:", error);
       res.status(500).send({ error: "Failed to search meals" });
+    }
+  });
+
+  //filter meals by category
+  router.get("/filter-meals", async (req, res) => {
+    try {
+      const { category } = req.query;
+
+      if (!category || category.trim() === "") {
+        return res.status(400).send({ error: "Category is required" });
+      }
+
+      const searchQuery = {
+        mealType: category,
+      };
+
+      const meals = await mealCollection.find(searchQuery).toArray();
+
+      if (meals.length === 0) {
+        return res.status(404).send({ message: "No meals found" });
+      }
+
+      res.send({ meals });
+    } catch (error) {
+      console.error("Error filtering meals:", error);
+      res.status(500).send({ error: "Failed to filter meals" });
+    }
+  });
+
+  //filter meals by price range
+  router.get("/filter-meals-by-price", async (req, res) => {
+    try {
+      const { minPrice, maxPrice } = req.query;
+
+      if (!minPrice || !maxPrice) {
+        return res.status(400).send({ error: "Price range is required" });
+      }
+
+      const searchQuery = {
+        price: { $gte: parseInt(minPrice), $lte: parseInt(maxPrice) },
+      };
+
+      const meals = await mealCollection.find(searchQuery).toArray();
+
+      if (meals.length === 0) {
+        return res.status(404).send({ message: "No meals found" });
+      }
+
+      res.send({ meals });
+    } catch (error) {
+      console.error("Error filtering meals by price:", error);
+      res.status(500).send({ error: "Failed to filter meals by price" });
     }
   });
 
