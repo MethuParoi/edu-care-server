@@ -95,14 +95,14 @@ module.exports = (db) => {
   //------------------------------- Payment History ---------------------
   //post payment history
   // Add payment history
-  router.post("/add-payment-history/:email", async (req, res) => {
+  router.post("/add-payment-history/:email", verifyToken, async (req, res) => {
     try {
       const email = req.params.email;
       const query = { email: email };
       const user = await userCollection.findOne(query);
       const newPayment = req.body; // Directly use req.body
 
-      console.log("New Payment:", newPayment);
+      // console.log("New Payment:", newPayment);
 
       const update = {
         $set: {
@@ -113,13 +113,13 @@ module.exports = (db) => {
         },
       };
 
-      console.log("Update Object:", update);
+      // console.log("Update Object:", update);
 
       const result = await userCollection.updateOne(query, update, {
         upsert: true,
       });
 
-      console.log("Update Result:", result);
+      // console.log("Update Result:", result);
 
       res.send(result);
     } catch (error) {
@@ -127,33 +127,9 @@ module.exports = (db) => {
       res.status(500).send({ error: "Failed to update payment history" });
     }
   });
-  // router.post("/add-payment-history/:email", async (req, res) => {
-  //   try {
-  //     const email = req.params.email;
-  //     const query = { email: email };
-  //     const user = await userCollection.findOne(query);
-  //     const newPayment = Array.isArray(req.body.payment)
-  //       ? req.body.payment
-  //       : [req.body.payment];
-  //     const update = {
-  //       $set: {
-  //         paymentHistory:
-  //           user && user.paymentHistory
-  //             ? [...user.paymentHistory, ...newPayment]
-  //             : newPayment,
-  //       },
-  //     };
-  //     const result = await userCollection.updateOne(query, update, {
-  //       upsert: true,
-  //     });
-  //     res.send(result);
-  //   } catch (error) {
-  //     res.status(500).send({ error: "Failed to update payment history" });
-  //   }
-  // });
 
   //get payment history
-  router.get("/get-payment-history/:email", async (req, res) => {
+  router.get("/get-payment-history/:email", verifyToken, async (req, res) => {
     try {
       const email = req.params.email;
       const query = { email: email };
@@ -184,7 +160,7 @@ module.exports = (db) => {
   //------------------------------admin--------------------------------
 
   //Make Admin
-  router.patch("/make-admin/:id", async (req, res) => {
+  router.patch("/make-admin/:id", verifyToken, async (req, res) => {
     try {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
