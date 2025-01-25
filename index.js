@@ -10,6 +10,7 @@ const userRoutes = require("./routes/user");
 const mealRoutes = require("./routes/meal");
 const reviewRoutes = require("./routes/review");
 const paymentRoutes = require("./routes/payment");
+const requestedMealRoutes = require("./routes/requestedMeal");
 
 const app = express();
 
@@ -35,6 +36,7 @@ async function main() {
     app.use("/api/meal", mealRoutes(db));
     app.use("/api/review", reviewRoutes(db));
     app.use("/api/payment", paymentRoutes(db));
+    app.use("/api/requested-meal", requestedMealRoutes(db));
 
     // Root Endpoint
     app.get("/", (req, res) => {

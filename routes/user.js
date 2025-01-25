@@ -343,5 +343,51 @@ module.exports = (db) => {
     }
   );
 
+  //----------------------------Requested Meal-----------------------------------
+  //insert requested meals
+  router.post(
+    "/insert-requested-meals/:email",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const user = await userCollection.findOne(query);
+        const newRequestedMeal = Array.isArray(req.body.requestedMeal)
+          ? req.body.requestedMeal
+          : [req.body.requestedMeal];
+        const update = {
+          $set: {
+            requestedMeal:
+              user && user.requestedMeal
+                ? [...user.requestedMeal, ...newRequestedMeal]
+                : newRequestedMeal,
+          },
+        };
+        const result = await userCollection.updateOne(query, update, {
+          upsert: true,
+        });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Failed to update requested meals" });
+      }
+    }
+  );
+
+  //get requested meals
+  router.get("/get-requested-meals/:email", verifyToken, async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (!user) {
+        return res.status(404).send({ error: "User not found" });
+      }
+      res.send(user.requestedMeal);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get requested meals" });
+    }
+  });
+
   return router;
 };
