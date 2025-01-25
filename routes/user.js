@@ -9,7 +9,7 @@ module.exports = (db) => {
   // Add user
   router.post("/add-user-data", async (req, res) => {
     try {
-      const newUser = req.body;
+      const newUser = { ...req.body, plan: "Bronze" };
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     } catch (error) {
@@ -20,7 +20,7 @@ module.exports = (db) => {
   //add google auth user data
   router.post("/add-google-user-data", async (req, res) => {
     try {
-      const user = req.body;
+      const user = { ...req.body, plan: "Bronze" };
 
       const query = { email: user.email };
       const existingUser = await userCollection.findOne(query);
@@ -92,6 +92,97 @@ module.exports = (db) => {
     }
   });
 
+  //------------------------------- Payment History ---------------------
+  //post payment history
+  // Add payment history
+  router.post("/add-payment-history/:email", async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const newPayment = req.body; // Directly use req.body
+
+      console.log("New Payment:", newPayment);
+
+      const update = {
+        $set: {
+          paymentHistory:
+            user && user.paymentHistory
+              ? [...user.paymentHistory, newPayment]
+              : [newPayment],
+        },
+      };
+
+      console.log("Update Object:", update);
+
+      const result = await userCollection.updateOne(query, update, {
+        upsert: true,
+      });
+
+      console.log("Update Result:", result);
+
+      res.send(result);
+    } catch (error) {
+      console.error("Error updating payment history:", error);
+      res.status(500).send({ error: "Failed to update payment history" });
+    }
+  });
+  // router.post("/add-payment-history/:email", async (req, res) => {
+  //   try {
+  //     const email = req.params.email;
+  //     const query = { email: email };
+  //     const user = await userCollection.findOne(query);
+  //     const newPayment = Array.isArray(req.body.payment)
+  //       ? req.body.payment
+  //       : [req.body.payment];
+  //     const update = {
+  //       $set: {
+  //         paymentHistory:
+  //           user && user.paymentHistory
+  //             ? [...user.paymentHistory, ...newPayment]
+  //             : newPayment,
+  //       },
+  //     };
+  //     const result = await userCollection.updateOne(query, update, {
+  //       upsert: true,
+  //     });
+  //     res.send(result);
+  //   } catch (error) {
+  //     res.status(500).send({ error: "Failed to update payment history" });
+  //   }
+  // });
+
+  //get payment history
+  router.get("/get-payment-history/:email", async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (!user) {
+        return res.status(404).send({ error: "User not found" });
+      }
+      res.send(user.paymentHistory);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get payment history" });
+    }
+  });
+
+  //------------------------------- Plan ---------------------
+  //update plan
+  router.patch("/update-plan/:email", async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+      const update = { $set: { plan: req.body.plan } };
+      const result = await userCollection.updateOne(query, update);
+      res.send(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to update plan" });
+    }
+  });
+
+  //------------------------------admin--------------------------------
+
   //Make Admin
   router.patch("/make-admin/:id", async (req, res) => {
     try {
@@ -114,7 +205,11 @@ module.exports = (db) => {
       }
       const query = { email: email, role: "admin" };
       const isAdmin = await userCollection.findOne(query);
-      res.send({ admin: true });
+      if (isAdmin) {
+        res.send({ admin: true });
+      } else {
+        res.send({ admin: false });
+      }
     } catch (error) {
       res.status(500).send({ error: "Failed to get admin" });
     }
