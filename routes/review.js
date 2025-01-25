@@ -22,7 +22,6 @@ module.exports = (db) => {
     }
   });
 
-
   // Get reviews
   router.get("/get-reviews", verifyToken, async (req, res) => {
     try {

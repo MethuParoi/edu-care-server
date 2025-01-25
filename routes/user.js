@@ -157,6 +157,101 @@ module.exports = (db) => {
     }
   });
 
+  //---------------------------get review---------------------
+  router.get("/get-review/:email", verifyToken, async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (!user) {
+        return res.status(404).send({ error: "User not found" });
+      }
+      res.send(user.reviewedMeal);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get review" });
+    }
+  });
+
+  // Edit review
+  router.patch(
+    "/edit-review/:email/:reviewId",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const { email, reviewId } = req.params; // Extract email and reviewId from params
+        const updatedReviewData = req.body; // Get updated review data from the request body
+
+        // Find the user with the given email
+        const query = { email };
+        const user = await userCollection.findOne(query);
+
+        if (!user) {
+          return res.status(404).send({ error: "User not found" });
+        }
+
+        // Update the specific review in the reviewedMeal array
+        const updatedReviews = user.reviewedMeal.map((review) => {
+          if (review.id === reviewId) {
+            return { ...review, ...updatedReviewData }; // Merge updated review data
+          }
+          return review;
+        });
+
+        // Update the user document in the database
+        const update = { $set: { reviewedMeal: updatedReviews } };
+        const result = await userCollection.updateOne(query, update);
+
+        if (result.modifiedCount === 0) {
+          return res.status(400).send({ error: "Failed to update review" });
+        }
+
+        res.send({ message: "Review updated successfully" });
+      } catch (error) {
+        res.status(500).send({ error: "Internal server error" });
+      }
+    }
+  );
+
+  // Delete review
+  router.delete(
+    "/delete-review/:email/:reviewId",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const { email, reviewId } = req.params; // Extract email and reviewId from params
+
+        // Find the user by email
+        const query = { email };
+        const user = await userCollection.findOne(query);
+
+        if (!user) {
+          return res.status(404).send({ error: "User not found" });
+        }
+
+        // Filter out the review with the given reviewId
+        const updatedReviews = user.reviewedMeal.filter(
+          (review) => review.id !== reviewId
+        );
+
+        if (updatedReviews.length === user.reviewedMeal.length) {
+          return res.status(404).send({ error: "Review not found" });
+        }
+
+        // Update the user's reviewedMeal array in the database
+        const update = { $set: { reviewedMeal: updatedReviews } };
+        const result = await userCollection.updateOne(query, update);
+
+        if (result.modifiedCount === 0) {
+          return res.status(400).send({ error: "Failed to delete review" });
+        }
+
+        res.send({ message: "Review deleted successfully" });
+      } catch (error) {
+        res.status(500).send({ error: "Internal server error" });
+      }
+    }
+  );
+
   //------------------------------admin--------------------------------
 
   //Make Admin
