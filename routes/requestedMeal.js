@@ -40,5 +40,33 @@ module.exports = (db) => {
     }
   });
 
+  // Delete requested meal
+  router.delete("/delete-requested-meal/:id", verifyToken, async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).send({ error: "Meal ID is required" });
+      }
+
+      // Remove the meal with the specified ID from the "meals" array
+      const result = await requestedMealCollection.updateOne(
+        {}, // Use an empty filter to target the collection-level document
+        { $pull: { meals: { id } } } // Remove the meal where `id` matches
+      );
+
+      if (result.modifiedCount === 0) {
+        return res
+          .status(404)
+          .send({ error: "Meal not found or already deleted" });
+      }
+
+      res.send({ message: "Meal deleted successfully", result });
+    } catch (error) {
+      console.error("Error deleting requested meal:", error);
+      res.status(500).send({ error: "Failed to delete requested meal" });
+    }
+  });
+
   return router;
 };
