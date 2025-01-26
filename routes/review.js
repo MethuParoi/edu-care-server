@@ -32,5 +32,32 @@ module.exports = (db) => {
     }
   });
 
+  // delete review
+  router.delete(
+    "/delete-review/:user_id/:review_id",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const { user_id, review_id } = req.params; // Extract user_id and review_id from URL
+
+        const result = await reviewCollection.updateOne(
+          { "reviews.review.user_id": user_id }, // Match the document where the user_id exists
+          { $pull: { "reviews.$[].review": { meal_id: review_id } } } // Remove the specific review by _id
+        );
+
+        if (result.modifiedCount === 0) {
+          return res
+            .status(404)
+            .send({ error: "Review not found or not authorized to delete" });
+        }
+
+        res.send({ message: "Review deleted successfully" });
+      } catch (error) {
+        console.error("Error deleting review:", error);
+        res.status(500).send({ error: "Failed to delete review" });
+      }
+    }
+  );
+
   return router;
 };
