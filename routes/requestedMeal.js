@@ -8,13 +8,13 @@ module.exports = (db) => {
   // Add requested meal
   router.post("/add-requested-meal", verifyToken, async (req, res) => {
     try {
-      const { id, user, status } = req.body;
+      const { id, user, status, name } = req.body;
 
-      if (!id || !user || !status) {
+      if (!id || !user || !status || !name) {
         return res.status(400).send({ error: "ID and user are required" });
       }
 
-      const newReqMeal = { id, user, status };
+      const newReqMeal = { id, user, status, name };
 
       // Upsert logic to create or update the requestedMealCollection
       const result = await requestedMealCollection.updateOne(
@@ -39,6 +39,41 @@ module.exports = (db) => {
       res.status(500).send({ error: "Failed to fetch reviews" });
     }
   });
+
+  //update status of requested meal
+  router.put(
+    "/update-requested-meal-status/:id",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!id || !status) {
+          return res.status(400).send({ error: "ID and status are required" });
+        }
+
+        // Update the requested meal with the specified ID
+        const result = await requestedMealCollection.updateOne(
+          { "meals.id": id }, // Find the requested meal where `id` matches
+          { $set: { "meals.$.status": status } } // Update the status of the found meal
+        );
+
+        if (result.modifiedCount === 0) {
+          return res
+            .status(404)
+            .send({ error: "Meal not found or already updated" });
+        }
+
+        res.send({ message: "Meal status updated successfully", result });
+      } catch (error) {
+        console.error("Error updating requested meal status:", error);
+        res
+          .status(500)
+          .send({ error: "Failed to update requested meal status" });
+      }
+    }
+  );
 
   // Delete requested meal
   router.delete("/delete-requested-meal/:id", verifyToken, async (req, res) => {

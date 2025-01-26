@@ -429,44 +429,6 @@ module.exports = (db) => {
       }
     }
   );
-  // router.delete(
-  //   "/delete-requested-meals/:email/:requestedId",
-  //   verifyToken,
-  //   async (req, res) => {
-  //     try {
-  //       const { email, requestedId } = req.params; // Extract email and requestedId from params
-
-  //       // Find the user by email
-  //       const query = { email };
-  //       const user = await userCollection.findOne(query);
-
-  //       if (!user) {
-  //         return res.status(404).send({ error: "User not found" });
-  //       }
-
-  //       // Filter out the request with the given requestedId
-  //       const updatedRequest = user.requestedMeal.filter(
-  //         (request) => request.id !== requestedId
-  //       );
-
-  //       if (updatedRequest.length === user.requestedMeal.length) {
-  //         return res.status(404).send({ error: "Request not found" });
-  //       }
-
-  //       // Update the user's requestedMeal array in the database
-  //       const update = { $set: { requestedMeal: updatedRequests } };
-  //       const result = await userCollection.updateOne(query, update);
-
-  //       if (result.modifiedCount === 0) {
-  //         return res.status(400).send({ error: "Failed to delete request" });
-  //       }
-
-  //       res.send({ message: "Request deleted successfully" });
-  //     } catch (error) {
-  //       res.status(500).send({ error: "Internal server error" });
-  //     }
-  //   }
-  // );
 
   return router;
 };
