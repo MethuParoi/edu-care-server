@@ -216,5 +216,46 @@ module.exports = (db) => {
     }
   });
 
+  //get single upcoming meal details
+  router.get(
+    "/get-upcoming-meal-details/:id",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const id = req.params.id;
+        const objectId = new ObjectId(id);
+        const query = { _id: objectId };
+        const upcomingMeal = await upcomingMealCollection.findOne(query);
+        if (!upcomingMeal) {
+          return res.status(404).send({ error: "Upcoming meal not found" });
+        }
+        res.send(upcomingMeal);
+      } catch (error) {
+        console.error("Error fetching upcoming meal details:", error);
+        res
+          .status(500)
+          .send({ error: "Failed to fetch upcoming meal details" });
+      }
+    }
+  );
+
+  //increase like count
+  router.patch(
+    "/increase-upcoming-meal-like/:id",
+    verifyToken,
+    async (req, res) => {
+      const id = req.params.id;
+      // Convert id to ObjectId
+      const objectId = new ObjectId(id);
+      const meal = await upcomingMealCollection.findOne({ _id: objectId });
+      const updatedMeal = { ...meal, likes: meal.likes + 1 };
+      const result = await upcomingMealCollection.updateOne(
+        { _id: objectId },
+        { $set: updatedMeal }
+      );
+      res.send(result);
+    }
+  );
+
   return router;
 };
