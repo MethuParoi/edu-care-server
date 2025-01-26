@@ -18,6 +18,18 @@ module.exports = (db) => {
     }
   });
 
+  // Add liked meal
+  router.post("/add-liked-meal", verifyToken, async (req, res) => {
+    try {
+      const newFood = req.body;
+      newFood._id = new ObjectId(newFood._id);
+      const result = await mealCollection.insertOne(newFood);
+      res.send(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to add meal" });
+    }
+  });
+
   // Get meals
   router.get("/get-featured-meal", async (req, res) => {
     try {
@@ -203,6 +215,19 @@ module.exports = (db) => {
       res.send(result);
     } catch (error) {
       res.status(500).send({ error: "Failed to add upcoming meal" });
+    }
+  });
+
+  //update a new data to upcoming meals
+  router.patch("/update-upcoming-meal/:id", verifyToken, async (req, res) => {
+    try {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const update = { $set: { isPublished: true } };
+      const result = await upcomingMealCollection.updateOne(query, update);
+      res.send(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to update" });
     }
   });
 
