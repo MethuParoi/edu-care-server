@@ -7,7 +7,7 @@ const connectToDatabase = require("./database/mongoClient");
 const verifyToken = require("./middleware/verifyToken");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
-const mealRoutes = require("./routes/meal");
+const universityRoutes = require("./routes/university");
 const reviewRoutes = require("./routes/review");
 const paymentRoutes = require("./routes/payment");
 const requestedMealRoutes = require("./routes/requestedMeal");
@@ -33,7 +33,7 @@ async function main() {
     // Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/user", userRoutes(db));
-    app.use("/api/meal", mealRoutes(db));
+    app.use("/api/university", universityRoutes(db));
     app.use("/api/review", reviewRoutes(db));
     app.use("/api/payment", paymentRoutes(db));
     app.use("/api/requested-meal", requestedMealRoutes(db));
