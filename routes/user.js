@@ -143,7 +143,9 @@ module.exports = (db) => {
     }
   });
 
-  //------------------------------- Plan ---------------------
+  //my application
+
+  //------------------------------- role ---------------------
   //update plan
   router.patch("/update-plan/:email", async (req, res) => {
     try {
@@ -268,19 +270,15 @@ module.exports = (db) => {
   });
 
   //check admin
-  router.get("/check-admin/:email", verifyToken, async (req, res) => {
+  router.get("/check-admin/:email", async (req, res) => {
     try {
       const email = req.params.email;
       if (!email) {
         return res.status(403).send({ error: "Forbidden access" });
       }
-      const query = { email: email, role: "admin" };
+      const query = { email: email };
       const isAdmin = await userCollection.findOne(query);
-      if (isAdmin) {
-        res.send({ admin: true });
-      } else {
-        res.send({ admin: false });
-      }
+      res.send({ isAdmin });
     } catch (error) {
       res.status(500).send({ error: "Failed to get admin" });
     }
@@ -375,6 +373,22 @@ module.exports = (db) => {
       }
     }
   );
+
+  //get my application
+  //get payment history
+  router.get("/get-my-application/:email", verifyToken, async (req, res) => {
+    try {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (!user) {
+        return res.status(404).send({ error: "User not found" });
+      }
+      res.send(user.userApplication);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to get payment history" });
+    }
+  });
 
   //----------------------------Requested Meal-----------------------------------
   //insert requested meals

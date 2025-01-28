@@ -116,7 +116,7 @@ module.exports = (db) => {
   });
 
   // Search universitys by title
-  router.get("/search-universitys", async (req, res) => {
+  router.get("/search-university", async (req, res) => {
     try {
       const { query } = req.query; // Get the search query from query parameters
 
@@ -128,7 +128,7 @@ module.exports = (db) => {
       const searchQuery = {
         $or: [
           {
-            title: { $regex: searchRegex },
+            universityName: { $regex: searchRegex },
           },
           // { email: { $regex: searchRegex } },
         ],
@@ -139,7 +139,7 @@ module.exports = (db) => {
         .toArray();
 
       if (universitys.length === 0) {
-        return res.status(404).send({ message: "No universitys found" });
+        return res.status(404).send({ message: "No university found" });
       }
 
       res.send({ universitys });
