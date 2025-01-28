@@ -345,6 +345,37 @@ module.exports = (db) => {
     }
   );
 
+  //application
+  //insert reviewed university
+  router.post(
+    "/insert-user-application/:email",
+    verifyToken,
+    async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const user = await userCollection.findOne(query);
+        const newUserApplication = Array.isArray(req.body.userApplication)
+          ? req.body.userApplication
+          : [req.body.userApplication];
+        const update = {
+          $set: {
+            userApplication:
+              user && user.userApplication
+                ? [...user.userApplication, ...newUserApplication]
+                : newUserApplication,
+          },
+        };
+        const result = await userCollection.updateOne(query, update, {
+          upsert: true,
+        });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Failed to update liked mScholarship" });
+      }
+    }
+  );
+
   //----------------------------Requested Meal-----------------------------------
   //insert requested meals
   router.post(

@@ -5,9 +5,10 @@ const cors = require("cors");
 
 const connectToDatabase = require("./database/mongoClient");
 const verifyToken = require("./middleware/verifyToken");
+const universityRoutes = require("./routes/university");
+const applicationRoutes = require("./routes/application");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
-const universityRoutes = require("./routes/university");
 const reviewRoutes = require("./routes/review");
 const paymentRoutes = require("./routes/payment");
 const requestedMealRoutes = require("./routes/requestedMeal");
@@ -37,6 +38,7 @@ async function main() {
     app.use("/api/review", reviewRoutes(db));
     app.use("/api/payment", paymentRoutes(db));
     app.use("/api/requested-meal", requestedMealRoutes(db));
+    app.use("/api/application", applicationRoutes(db));
 
     // Root Endpoint
     app.get("/", (req, res) => {
