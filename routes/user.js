@@ -9,7 +9,7 @@ module.exports = (db) => {
   // Add user
   router.post("/add-user-data", async (req, res) => {
     try {
-      const newUser = { ...req.body, plan: "Bronze" };
+      const newUser = { ...req.body, role: "user" };
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     } catch (error) {
@@ -20,7 +20,7 @@ module.exports = (db) => {
   //add google auth user data
   router.post("/add-google-user-data", async (req, res) => {
     try {
-      const user = { ...req.body, plan: "Bronze" };
+      const user = { ...req.body, role: "user" };
 
       const query = { email: user.email };
       const existingUser = await userCollection.findOne(query);
@@ -313,24 +313,26 @@ module.exports = (db) => {
     }
   });
 
-  //insert reviewed meals
+  //insert reviewed university
   router.post(
-    "/insert-reviewed-meals/:email",
+    "/insert-reviewed-scholarships/:email",
     verifyToken,
     async (req, res) => {
       try {
         const email = req.params.email;
         const query = { email: email };
         const user = await userCollection.findOne(query);
-        const newReviewedMeal = Array.isArray(req.body.reviewedMeal)
-          ? req.body.reviewedMeal
-          : [req.body.reviewedMeal];
+        const newReviewedScholarship = Array.isArray(
+          req.body.reviewedScholarship
+        )
+          ? req.body.reviewedScholarship
+          : [req.body.reviewedScholarship];
         const update = {
           $set: {
-            reviewedMeal:
+            reviewedScholarship:
               user && user.reviewedMeal
-                ? [...user.reviewedMeal, ...newReviewedMeal]
-                : newReviewedMeal,
+                ? [...user.reviewedMeal, ...newReviewedScholarship]
+                : newReviewedScholarship,
           },
         };
         const result = await userCollection.updateOne(query, update, {
@@ -338,7 +340,7 @@ module.exports = (db) => {
         });
         res.send(result);
       } catch (error) {
-        res.status(500).send({ error: "Failed to update liked meals" });
+        res.status(500).send({ error: "Failed to update liked mScholarship" });
       }
     }
   );

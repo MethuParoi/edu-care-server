@@ -34,14 +34,37 @@ module.exports = (db) => {
   router.get("/get-featured-university", async (req, res) => {
     try {
       const universityType = req.query.universityType;
-      const query =
-        universityType && universityType !== "all" ? { universityType } : {};
-      const universitys = await universityCollection.find(query).toArray();
-      res.send(universitys);
+
+      if (universityType === "featured") {
+        const universities = await universityCollection
+          .aggregate([
+            { $sort: { postDate: -1, applicationFees: 1 } },
+            { $limit: 6 },
+          ])
+          .toArray();
+
+        return res.status(200).json(universities); // Return JSON
+      }
+
+      const universities = await universityCollection.find({}).toArray();
+      res.status(200).json(universities); // Return JSON
     } catch (error) {
-      res.status(500).send({ error: "Failed to fetch universitys" });
+      console.error("Error fetching universities:", error.message);
+      res.status(500).json({ error: "Failed to fetch universities" });
     }
   });
+
+  // router.get("/get-featured-university", async (req, res) => {
+  //   try {
+  //     const universityType = req.query.universityType;
+  //     const query =
+  //       universityType && universityType !== "all" ? { universityType } : {};
+  //     const universitys = await universityCollection.find(query).toArray();
+  //     res.send(universitys);
+  //   } catch (error) {
+  //     res.status(500).send({ error: "Failed to fetch university" });
+  //   }
+  // });
 
   // Get single university details
   router.get("/get-university-details/:id", verifyToken, async (req, res) => {
@@ -70,14 +93,14 @@ module.exports = (db) => {
   });
 
   //update a university
-  router.patch("/update-university/:id", verifyToken, async (req, res) => {
+  router.patch("/update-university/:id", async (req, res) => {
     const id = req.params.id;
     // Convert id to ObjectId
     const objectId = new ObjectId(id);
-    const updateduniversity = req.body;
+    const updatedUniversity = req.body;
     const result = await universityCollection.updateOne(
       { _id: objectId },
-      { $set: updateduniversity }
+      { $set: updatedUniversity }
     );
     res.send(result);
   });
